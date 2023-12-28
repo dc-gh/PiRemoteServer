@@ -1,3 +1,4 @@
+import configparser
 from flask import Flask, request
 import json
 from py_irsend import irsend
@@ -21,5 +22,16 @@ def receive_json():
         return json.dumps(response)
 
 if __name__ == '__main__':
-    app.run(ssl_context=('selfsigned.crt', 'selfsigned.key'), host='0.0.0.0', port=5000)
+    settings = configparser.ConfigParser()
+    settings.read("settings.ini")
+    serverAddress = settings.get("network", "address")
+    serverPort = settings.get("network", "port")
+
+    sslEnabled = settings.get("ssl", "ssl_enabled")
+    publicKey = settings.get("ssl", "public_key")
+    privateKey = settings.get("ssl", "private_key")
+    if sslEnabled:
+        app.run(ssl_context=(publicKey, privateKey), host=serverAddress, port=serverPort)
+    else:
+        app.run(host=serverAddress, port=serverPort)
 
